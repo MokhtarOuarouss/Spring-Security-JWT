@@ -2,7 +2,6 @@ package com.mokhtar.spring_security.Config;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.apachecommons.CommonsLog;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -15,6 +14,13 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor //create constructor with any final fields
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private final JwtService jwtService;
+
+    public JwtAuthFilter(JwtService jwtService) {
+        this.jwtService = jwtService;
+    }
+
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
@@ -23,5 +29,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorisation");
         final String jwt ;
+        final String userEmail;
+
+        if(authHeader == null || !authHeader.startsWith("Bearer  ")){
+            filterChain.doFilter(request,response);
+            return;
+        }
+        jwt = authHeader.substring(7);
+        userEmail =jwtService.extractUsername(jwt);
     }
 }
